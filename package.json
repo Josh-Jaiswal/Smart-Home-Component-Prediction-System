@@ -1,0 +1,29 @@
+{
+  "name": "smart-home-configurator",
+  "version": "1.0.0",
+  "description": "Smart Home Configuration Planner with React frontend and Flask backend",
+  "main": "index.js",
+  "scripts": {
+    "start": "vite",
+    "build": "vite build",
+    "serve": "vite preview"
+  },
+  "dependencies": {
+    "@fortawesome/fontawesome-svg-core": "^6.4.2",
+    "@fortawesome/free-solid-svg-icons": "^6.4.2",
+    "@fortawesome/react-fontawesome": "^0.2.0",
+    "axios": "^1.5.0",
+    "bootstrap": "^5.3.1",
+    "chart.js": "^4.4.0",
+    "react": "^18.2.0",
+    "react-chartjs-2": "^5.2.0",
+    "react-dom": "^18.2.0",
+    "react-router-dom": "^6.16.0",
+    "styled-components": "^6.0.8",
+    "three": "^0.174.0"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.0.4",
+    "vite": "^4.4.9"
+  }
+}
