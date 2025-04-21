@@ -62,7 +62,8 @@ body {
   position: relative;
   border: 1px solid rgba(255, 255, 255, 0.1);
 }
-/* Add these styles at the top of your file */
+
+/* Homepage styles */
 .homepage {
   position: relative;
   width: 100%;
@@ -297,7 +298,6 @@ h1, h2, h3, h4, h5, h6 {
   box-shadow: 0 12px 25px rgba(0, 0, 0, 0.3);
 }
 
-/* Subtle scale for slider value bubble on hover */
 .slider-container:hover .slider-value {
   transform: translateX(-50%) scale(1.1);
 }
@@ -320,13 +320,12 @@ h1, h2, h3, h4, h5, h6 {
   z-index: 2;
 }
 
-/* Custom styling for range input - Enhanced */
 .form-range {
   height: 8px;
   border-radius: 4px;
-  appearance: none;  /* Standard property */
-  -webkit-appearance: none;  /* Webkit for Safari/Chrome */
-  -moz-appearance: none;  /* Mozilla for Firefox */
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
   width: 100%;
   transition: background 0.3s;
 }
@@ -359,32 +358,6 @@ h1, h2, h3, h4, h5, h6 {
   background: linear-gradient(to right, rgba(30, 30, 50, 0.3), rgba(108, 99, 255, 0.7));
   height: 8px;
   border-radius: 4px;
-}
-
-.priority-section {
-  background-color: rgba(36, 36, 68, 0.6);
-  border-radius: 20px;
-  padding: 30px;
-  margin: 30px 0;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-}
-
-.priority-title {
-  text-align: center;
-  margin-bottom: 20px;
-  font-size: 1.5rem;
-  color: var(--text-light);
-  border-bottom: 2px solid var(--primary-light);
-  padding-bottom: 15px;
-  text-shadow: 0 0 10px rgba(108, 99, 255, 0.3);
-}
-
-.priority-icon {
-  color: var(--primary-light);
-  margin-right: 10px;
-  font-size: 1.3rem;
-  filter: drop-shadow(0 0 5px rgba(138, 127, 255, 0.5));
 }
 
 .slider-description {
@@ -490,7 +463,21 @@ h1, h2, h3, h4, h5, h6 {
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
 }
 
-.budget-total { background: linear-gradient(135deg, #4b4b6d, #3a3a5a); }
+.budget-total {
+  color: var(--primary-light); /* or use #8a7fff for visibility */
+  font-weight: bold;
+}
+
+/* Optional: style component name and price for clarity */
+.component-name {
+  color: var(--text-light);
+  font-weight: 500;
+}
+.component-price {
+  color: var(--success);
+  font-weight: 500;
+}
+
 .budget-used { background: linear-gradient(135deg, #6c63ff, #5a52d5); }
 .budget-remaining { background: linear-gradient(135deg, #9d50bb, #6e48aa); }
 
@@ -501,28 +488,491 @@ h1, h2, h3, h4, h5, h6 {
   color: var(--text-light);
 }
 
-.priority-badge {
-  background: linear-gradient(135deg, #8a7fff, #6c63ff);
+/* Component card styles */
+/* Component Card Styling */
+.component-card {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  padding: 12px;
+  margin-bottom: 10px;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.component-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.component-card h4 {
+  font-size: 1rem;
+  margin-bottom: 8px;
+  color: #fff;
+}
+
+.component-card p {
+  font-size: 0.85rem;
+  margin-bottom: 4px;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.component-card strong {
+  color: #fff;
+}
+
+.component-list {
+  max-height: 400px;
+  overflow-y: auto;
+  padding-right: 5px;
+}
+
+.component-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.component-list::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 10px;
+}
+
+.component-list::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 10px;
+}
+
+.component-list::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+.component-name {
+  font-weight: bold;
+  font-size: 1.1rem;
+  color: #a5a1ff;
+  margin-bottom: 5px;
+}
+
+.component-details {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 8px;
+}
+
+.component-metric {
+  display: flex;
+  align-items: center;
+}
+
+.component-metric i {
+  margin-right: 5px;
+  color: #8a7fff;
+}
+
+/* Configuration summary styles */
+.config-summary {
+  background-color: rgba(50, 50, 80, 0.8);
+  border-radius: 10px;
+  padding: 15px;
   color: white;
-  padding: 5px 10px;
-  border-radius: 20px;
-  margin-right: 10px;
-  font-size: 0.9rem;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  margin-bottom: 20px;
+}
+
+/* Chart Styles - CONSOLIDATED */
+/* Add these styles for the chart images */
+.chart-image {
+  max-width: 100%;
+  height: auto;
+  transition: transform 0.3s ease;
+}
+
+.chart-image:hover {
+  transform: scale(1.05);
+}
+
+.chart-card {
+  background-color: rgba(36, 36, 68, 0.9) !important;
+  border: 1px solid rgba(108, 99, 255, 0.2) !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2) !important;
+  padding: 15px;
+  overflow: hidden;
+}
+
+.chart-card .card-body {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  min-height: 300px;
 }
 
 .chart-title {
   color: var(--text-light);
-  margin-bottom: 15px;
-  font-size: 1.2rem;
   font-weight: 600;
+  font-size: 1.2rem;
+  font-family: 'Orbitron', sans-serif;
+  letter-spacing: 0.5px;
+}
+
+.chart-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 350px;
+  padding: 10px;
+}
+
+.chart-container text,
+.chartjs-render-monitor text {
+  fill: white !important;
+  font-weight: 500 !important;
+  font-size: 14px !important;
+}
+
+.chart-wrapper {
+  position: relative;
+}
+
+/* IMPORTANT: Use only auto for image-rendering to avoid conflicts */
+canvas {
+  image-rendering: auto !important;
+}
+
+.chart-card .card-body > div {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Room Card Styles - CONSOLIDATED */
+.room-card {
+  transition: all 0.3s ease;
+  border: 1px solid rgba(108, 99, 255, 0.2) !important;
+  background-color: rgba(36, 36, 68, 0.8) !important;
+}
+
+.room-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 25px rgba(108, 99, 255, 0.2) !important;
+}
+
+.room-card .card-header {
+  background: linear-gradient(45deg, var(--card-bg), var(--dark-bg)) !important;
+  border-bottom: 1px solid rgba(108, 99, 255, 0.2) !important;
+  color: white !important;
+}
+
+.room-card .card-title {
+  font-family: 'Orbitron', sans-serif;
+  font-weight: 600;
+  color: var(--text-light);
+}
+
+.room-card .list-group-item {
+  background-color: rgba(50, 50, 80, 0.7) !important;
+  color: white !important;
+  border-color: rgba(108, 99, 255, 0.2) !important;
+  margin-bottom: 5px;
+  border-radius: 6px;
+}
+
+.room-card .card-footer {
+  background-color: rgba(36, 36, 68, 0.9) !important;
+  color: white !important;
+}
+
+/* Component Table Styles - CONSOLIDATED */
+.component-table {
+  background-color: rgba(36, 36, 68, 0.8) !important;
+}
+
+.component-table th {
+  background-color: rgba(50, 50, 80, 0.9) !important;
+  color: white !important;
+  font-family: 'Orbitron', sans-serif;
+  font-weight: 600;
+  border-color: rgba(108, 99, 255, 0.2) !important;
+  padding: 12px 15px;
+}
+
+.component-table td {
+  color: white !important;
+  border-color: rgba(108, 99, 255, 0.2) !important;
+  padding: 12px 15px;
+}
+
+.component-table tbody tr {
+  background-color: rgba(50, 50, 80, 0.7) !important;
+  transition: all 0.2s ease;
+}
+
+.component-table tbody tr:hover {
+  background-color: rgba(60, 60, 100, 0.8) !important;
+  transform: translateX(5px);
+}
+
+.component-table .badge {
+  font-size: 0.85rem;
+  padding: 6px 10px;
+  background: linear-gradient(135deg, var(--primary-color), var(--primary-dark)) !important;
+}
+
+.component-table tfoot {
+  background-color: rgba(60, 60, 100, 0.9) !important;
+  font-weight: bold;
+}
+
+/* Section styling */
+.room-allocations-section,
+.component-details-section {
+  margin-top: 40px;
+  margin-bottom: 30px;
+}
+
+.room-allocations-section h2,
+.component-details-section h2 {
+  color: #ffffff !important;
+  font-family: 'Orbitron', sans-serif;
+  font-size: 1.8rem;
+  margin-bottom: 20px;
+  text-shadow: 0 0 10px rgba(108, 99, 255, 0.3);
+  letter-spacing: 1px;
+}
+
+
+
+/* Ensure all headings are white */
+h1, h2, h3, h4, h5, h6 {
+  color: #ffffff !important;
+}
+
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap');
+:root {
+  --font-primary: 'Montserrat', sans-serif;
+  --font-secondary: 'Poppins', sans-serif;
+}
+body {
+  font-family: var(--font-primary) !important;
+}
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Orbitron', sans-serif !important;
+}
+a, .btn-primary, .nav-pills .nav-link.active {
+  text-transform: uppercase;
+}
+/* Subtle link hover underline */
+a:hover { text-decoration: underline; }
+/* Make form labels slightly lighter */
+.form-label { color: var(--text-muted) !important; }
+/* Enhance card headers for visual pop */
+.card-header { background: var(--primary-dark) !important; color: var(--text-light) !important; }
+
+
+
+/* Metric Cards - New Sleek Design */
+.metric-card {
+  background: rgba(108, 99, 255, 0.15);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(108, 99, 255, 0.2);
+  border-radius: 15px;
+  padding: 1.5rem;
+  min-width: 250px;
   text-align: center;
-  border-bottom: 2px solid var(--primary-light);
-  padding-bottom: 12px;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
 }
 
-.neon-text {
-  color: #a5a0ff;
-  text-shadow: 0 0 10px rgba(138, 127, 255, 0.8), 0 0 20px rgba(138, 127, 255, 0.5);
+.metric-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 25px rgba(108, 99, 255, 0.2);
+  border-color: rgba(108, 99, 255, 0.4);
 }
 
+.metric-icon {
+  font-size: 2rem;
+  margin-bottom: 0.5rem;
+  color: var(--primary-light);
+  filter: drop-shadow(0 0 10px rgba(108, 99, 255, 0.3));
+}
+
+.metric-label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: 1px;
+  color: var(--text-muted);
+  margin-bottom: 0.5rem;
+  font-family: 'Orbitron', sans-serif;
+}
+
+.metric-value {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text-light);
+  text-shadow: 0 0 10px rgba(108, 99, 255, 0.2);
+}
+
+/* Configuration Tabs - New Design */
+.config-tabs-container {
+  background: rgba(36, 36, 68, 0.5);
+  backdrop-filter: blur(10px);
+  border-radius: 15px;
+  padding: 1rem;
+  border: 1px solid rgba(108, 99, 255, 0.15);
+}
+
+.config-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.config-tab-btn {
+  background: rgba(50, 50, 80, 0.5);
+  border: 1px solid rgba(108, 99, 255, 0.2);
+  color: var(--text-light);
+  padding: 0.75rem 1.5rem;
+  border-radius: 10px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  font-family: var(--font-primary);
+}
+
+.config-tab-btn:hover {
+  background: rgba(108, 99, 255, 0.2);
+  transform: translateY(-2px);
+}
+
+.config-tab-btn.active {
+  background: linear-gradient(135deg, rgba(108, 99, 255, 0.7), rgba(157, 80, 187, 0.7));
+  border-color: rgba(255, 255, 255, 0.2);
+  box-shadow: 0 5px 15px rgba(108, 99, 255, 0.3);
+  font-weight: 600;
+  transform: translateY(-2px);
+}
+
+/* Room total styling */
+.room-total-container {
+  background: rgba(108, 99, 255, 0.2);
+  padding: 8px 12px;
+  border-radius: 8px;
+  margin-top: 10px;
+}
+
+.room-total {
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 1.1rem;
+  text-shadow: 0 0 10px rgba(108, 99, 255, 0.5);
+  letter-spacing: 0.5px;
+}
+
+
+/* Sleek Component Table Styles */
+.sleek-table-wrapper {
+  background: linear-gradient(120deg, #23234a 60%, #2d2d5a 100%);
+  border-radius: 18px;
+  box-shadow: 0 8px 32px rgba(76, 63, 255, 0.18);
+  padding: 22px 18px 10px 18px;
+  margin-bottom: 40px;
+  overflow-x: auto;
+}
+
+.sleek-component-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  background: transparent;
+}
+
+.sleek-component-table th, .sleek-component-table td {
+  padding: 14px 18px;
+  font-family: 'Montserrat', 'Orbitron', sans-serif;
+  font-size: 1.04rem;
+  color: #fff;
+  border: none;
+}
+
+.sleek-component-table th {
+  font-family: 'Orbitron', sans-serif;
+}
+.sleek-component-table td {
+  font-family: 'Montserrat', sans-serif;
+}
+
+/* Efficiency badge */
+.efficiency-badge {
+  display: inline-block;
+  min-width: 48px;
+  padding: 6px 14px;
+  border-radius: 20px;
+  color: #23234a;
+  font-weight: 700;
+  background: linear-gradient(90deg, #4ecca3 60%, #23234a 0%);
+  box-shadow: 0 2px 8px rgba(76, 63, 255, 0.07);
+  text-align: center;
+  font-family: 'Orbitron', sans-serif;
+  letter-spacing: 1px;
+}
+
+/* Reliability badge */
+.reliability-badge {
+  display: inline-block;
+  min-width: 48px;
+  padding: 6px 14px;
+  border-radius: 20px;
+  color: #23234a;
+  font-weight: 700;
+  background: linear-gradient(90deg, #54a0ff 60%, #23234a 0%);
+  box-shadow: 0 2px 8px rgba(76, 63, 255, 0.07);
+  text-align: center;
+  font-family: 'Orbitron', sans-serif;
+  letter-spacing: 1px;
+}
+.sleek-component-table tbody tr {
+  background: rgba(36, 36, 68, 0.88);
+  transition: background 0.2s;
+}
+
+.sleek-component-table tbody tr:hover {
+  background: rgba(76, 63, 255, 0.13);
+}
+
+.comp-name {
+  font-weight: 600;
+  color: #8a7fff;
+}
+
+.efficiency-badge {
+  display: inline-block;
+  min-width: 48px;
+  padding: 6px 14px;
+  border-radius: 20px;
+  color: #23234a;
+  font-weight: 700;
+  background: linear-gradient(90deg, #4ecca3 60%, #23234a 0%);
+  box-shadow: 0 2px 8px rgba(76, 63, 255, 0.07);
+  text-align: center;
+  font-family: 'Orbitron', sans-serif;
+  letter-spacing: 1px;
+}
+
+/* Add this after your chart styles */
+.empty-chart-message {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: var(--text-muted);
+  font-style: italic;
+  padding: 30px;
+  text-align: center;
+  background: rgba(36, 36, 68, 0.5);
+  border-radius: 10px;
+  border: 1px dashed rgba(108, 99, 255, 0.3);
+}
+
+/* Ensure chart containers have proper height */
+.chart-wrapper {
+  height: 300px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}

@@ -1,10 +1,16 @@
+# pyright: ignore
+from typing import Any
+from numpy._typing._array_like import NDArray
+from numpy import complexfloating, floating, object_
+from numpy._typing import _64Bit
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
-import seaborn as sns
+import seaborn as sns 
 from pulp import *
 import random
-from collections import defaultdict
+from collections import defaultdict # type: ignore
+from sklearn.model_selection import GridSearchCV, cross_val_score
 from sklearn.ensemble import RandomForestClassifier, GradientBoostingRegressor
 from sklearn.cluster import KMeans
 from sklearn.preprocessing import StandardScaler
@@ -14,6 +20,8 @@ import joblib
 import os
 from sklearn.neural_network import MLPRegressor
 from sklearn.tree import DecisionTreeClassifier
+import shutil, os
+
 
 class SmartHomePredictor:
     def __init__(self, data_path="synthetic_smart_home_components.csv"):
@@ -32,19 +40,19 @@ class SmartHomePredictor:
         # Initialize room types and their typical components
         self.room_types = {
             "Living Room": {
-                "Lighting": 3,  # e.g., 3 light sources
-                "Security": 1,  # e.g., 1 camera
+                "Lighting": 2,  # e.g., 3 light sources
+                "Security": 2,  # e.g., 1 camera
                 "HVAC": 1,      # e.g., 1 thermostat
                 "Energy Management": 2  # e.g., 2 smart plugs
             },
             "Bedroom": {
                 "Lighting": 2,
-                "Security": 0,
+                "Security": 1,
                 "HVAC": 1,
                 "Energy Management": 1
             },
             "Kitchen": {
-                "Lighting": 2,
+                "Lighting": 1,
                 "Security": 0,
                 "HVAC": 0,
                 "Energy Management": 3
@@ -57,7 +65,7 @@ class SmartHomePredictor:
             },
             "Hallway": {
                 "Lighting": 1,
-                "Security": 1,
+                "Security": 2,
                 "HVAC": 0,
                 "Energy Management": 0
             },
@@ -85,17 +93,8 @@ class SmartHomePredictor:
     def initialize_ml_models(self):
         """Initialize machine learning models for component selection and optimization"""
         try:
-            # Import ML libraries
-            from sklearn.ensemble import RandomForestClassifier, GradientBoostingRegressor
-            from sklearn.cluster import KMeans
-            from sklearn.preprocessing import StandardScaler
-            from sklearn.neighbors import KNeighborsRegressor
-            import xgboost as xgb
-            from sklearn.neural_network import MLPRegressor
-            from sklearn.tree import DecisionTreeClassifier
             
             # Create models directory if it doesn't exist
-            import os
             os.makedirs('models', exist_ok=True)
             
             # Check if models already exist and load them
@@ -133,22 +132,22 @@ class SmartHomePredictor:
             
             # Neural Network for complex pattern recognition
             self.nn_model = MLPRegressor(
-                hidden_layer_sizes=(32, 16),  # Reduced from (64, 32)
+                hidden_layer_sizes=(32, 16),  
                 activation='relu',
                 solver='adam',
-                max_iter=500,     # Reduced from 1000
+                max_iter=500,     
                 random_state=42
             )
             
             # K-Means for component clustering
             self.kmeans_model = KMeans(
-                n_clusters=4,     # Reduced from 5
+                n_clusters=4,     
                 random_state=42
             )
             
             # KNN for similar component recommendations
             self.knn_model = KNeighborsRegressor(
-                n_neighbors=3,    # Reduced from 5
+                n_neighbors=3,   
                 weights='distance'
             )
             
@@ -183,43 +182,62 @@ class SmartHomePredictor:
         try:
             # Extract features for training
             features = self._extract_component_features()
-            
             # Scale features
-            scaled_features = self.scaler.fit_transform(features)
-            
+            scaled_features = self._transform_with_scaler(features, self.scaler)
             # Create synthetic targets for training (since we don't have user feedback)
-            # For compatibility: create synthetic compatibility scores based on component attributes
             compatibility_targets = self._create_synthetic_compatibility_targets()
-            
+            param_grid = {
+                'n_estimators': [50, 100, 200],
+                'max_depth': [5, 8, 10],
+                'min_samples_split': [2, 5]
+            }
+            # Hyperparameter tuning for RandomForest
+            grid_search = GridSearchCV(
+                estimator=RandomForestClassifier(random_state=42),
+                param_grid=param_grid,
+                cv=3,
+                n_jobs=-1
+            )
+            grid_search.fit(scaled_features, compatibility_targets)
+            self.compatibility_model = grid_search.best_estimator_
+
             # For performance: use efficiency as a proxy for performance
             performance_targets = self.df['Efficiency'].values
-            
-            # Train models
-            # 1. Random Forest for compatibility
-            self.compatibility_model.fit(scaled_features, compatibility_targets)
-            
+
             # 2. XGBoost for performance prediction
             self.performance_model.fit(scaled_features, performance_targets)
-            
             # 3. Neural Network for complex patterns
             self.nn_model.fit(scaled_features, self.df['Efficiency'].values)
-            
             # 4. K-Means for component clustering
             self.kmeans_model.fit(scaled_features)
-            # Add cluster labels to dataframe
             self.df['Cluster'] = self.kmeans_model.labels_
-            
             # 5. KNN for similar component recommendations
             self.knn_model.fit(scaled_features, self.df['Price_INR'].values)
-            
             # 6. Decision Tree for rule extraction
             self.decision_tree.fit(scaled_features, compatibility_targets)
-            
             # 7. Gradient Boosting for score refinement
             self.gb_model.fit(scaled_features, self.df['Reliability'].values)
-            
+
             print("ML models trained successfully")
-            
+
+            # New validation metrics
+            cv_scores = cross_val_score(
+                self.compatibility_model,
+                scaled_features,
+                compatibility_targets,
+                cv=5,
+                scoring='f1_weighted'
+            )
+            print(f"Compatibility Model CV F1: {cv_scores.mean():.2f} (±{cv_scores.std():.2f})")
+
+            # Feature importance visualization
+            if hasattr(self.compatibility_model, 'feature_importances_'):
+                importances = pd.Series(
+                    self.compatibility_model.feature_importances_,
+                    index=features.columns
+                )
+                print("Feature Importances:\n", importances.sort_values(ascending=False))
+
         except Exception as e:
             print(f"Error training ML models: {e}")
             print("Continuing with rule-based approach")
@@ -232,27 +250,59 @@ class SmartHomePredictor:
         # Create feature matrix
         features = self.df[numerical_features].copy()
         
-        # Add one-hot encoded features for categories
+        # Handle division by zero and NaN values
+        epsilon = 1e-6
+        features['Price_to_Efficiency'] = features['Price_INR'] / (features['Efficiency'].replace(0, epsilon) + epsilon)
+        features['Reliability_per_Rupee'] = features['Reliability'] / (features['Price_INR'].replace(0, epsilon) + epsilon)
+        
+        # Fill any NaN results
+        features = features.replace([np.inf, -np.inf], np.nan)
+        features = features.fillna(features.median())
+        
+        # Protocol compatibility features
+        if 'Compatibility' in self.df.columns:
+            # Handle NaN values in Compatibility
+            self.df['Compatibility'] = self.df['Compatibility'].fillna('')
+            protocols = self.df['Compatibility'].str.get_dummies(',')
+            features = pd.concat([features, protocols], axis=1)
+        
+        # Existing category encoding
         for category in self.df['Category'].unique():
             features[f'Category_{category}'] = (self.df['Category'] == category).astype(int)
         
         return features
-    
-    def _create_synthetic_compatibility_targets(self):
-        """Create synthetic compatibility targets for training"""
-        # This is a simplified approach - in a real scenario, you'd use actual compatibility data
-        # Here we'll use a heuristic: components with similar efficiency and reliability are more compatible
+    def _create_synthetic_compatibility_targets(self) -> np.ndarray:
+        """
+        Create synthetic compatibility targets for training,
+        returning a 1D numpy array of ints (0, 1, or 2) with no NaNs.
+        """
+
+        # 1) Base score from Efficiency & Reliability
+        base = (self.df['Efficiency']  / 10 * 0.6) + \
+            (self.df['Reliability'] / 10 * 0.4)
+
+        # 2) Fill any NaNs and clamp to [0,1]
+        median = base.median()
+        base = base.fillna(median)
+        if 'Compatibility' in self.df.columns:
+            proto_bonus = self.df['Compatibility'].apply(
+                lambda x: sum(p in {'Zigbee','Z‑Wave','Matter'} for p in str(x).split(','))
+            )
+            base += proto_bonus * 0.2
+        base = base.replace([np.inf, -np.inf], np.nan).fillna(median)
+        base = base.clip(lower=0, upper=1)   # pandas.Series.clip
+
+        # 3) Bin into three classes, returning a Series[int]
+        labels_series = pd.cut(
+            base,
+            bins=[0, 0.5, 0.8, 1],
+            include_lowest=True,
+            labels=False    # ← produce integer bin indices 0,1,2
+        )
+
+        # 4) Convert to numpy array of ints
+        return labels_series.to_numpy(dtype=int)
         
-        # Normalize efficiency and reliability
-        efficiency_norm = (self.df['Efficiency'] - self.df['Efficiency'].min()) / (self.df['Efficiency'].max() - self.df['Efficiency'].min())
-        reliability_norm = (self.df['Reliability'] - self.df['Reliability'].min()) / (self.df['Reliability'].max() - self.df['Reliability'].min())
-        
-        # Create a synthetic compatibility score (0 or 1)
-        # Components with both high efficiency and reliability are considered "compatible"
-        compatibility = ((efficiency_norm + reliability_norm) / 2 > 0.6).astype(int)
-        
-        return compatibility
-    
     def enhance_component_scores_with_ml(self, components, user_features=None, model_subset='all'):
         """
         Enhance component scores using ML models
@@ -272,28 +322,14 @@ class SmartHomePredictor:
             Components with enhanced scores
         """
         try:
-            # If ML models aren't initialized, return original components
+        # If ML models aren't initialized, return original components
             if not hasattr(self, 'compatibility_model'):
                 return components
             
-            # Extract features for each component
-            component_features = []
-            for comp in components:
-                # Basic numerical features
-                features = [
-                    comp['Price_INR'],
-                    comp['Efficiency'],
-                    comp['Reliability']
-                ]
-                
-                # One-hot encode category
-                for category in self.df['Category'].unique():
-                    features.append(1 if comp['Category'] == category else 0)
-                
-                component_features.append(features)
-            
-            # Scale features
-            scaled_features = self.scaler.transform(component_features)
+            comp_df = pd.DataFrame(components)
+            features = self._extract_component_features_from_df(comp_df)
+            scaled_features = self._transform_with_scaler(features, self.scaler)
+
             
             # Select which models to use based on subset parameter
             if model_subset == 'minimal':
@@ -348,32 +384,38 @@ class SmartHomePredictor:
             print(f"Error enhancing scores with ML: {e}")
             return components
     
+    def _extract_component_features_from_df(self, df):
+        numerical_features = ['Price_INR', 'Efficiency', 'Reliability']
+        features = df[numerical_features].copy()
+        features['Price_to_Efficiency'] = features['Price_INR'] / (features['Efficiency'] + 1e-6)
+        features['Reliability_per_Rupee'] = features['Reliability'] / (features['Price_INR'] + 1e-6)
+        if 'Compatibility' in df.columns:
+            protocols = df['Compatibility'].str.get_dummies(',')
+            features = pd.concat([features, protocols], axis=1)
+        # Ensure all category columns from training are present
+        for category in self.df['Category'].unique():
+            col = f'Category_{category}'
+            features[col] = (df['Category'] == category).astype(int) if 'Category' in df.columns else 0
+        # Fill any missing columns with 0 (in case training had more protocol columns)
+        for col in self._extract_component_features().columns:
+            if col not in features.columns:
+                features[col] = 0
+        # Reorder columns to match training
+        features = features[self._extract_component_features().columns]
+        return features
+
     def preprocess_data(self):
         """
         Preprocess the data: check for missing values, duplicates, and normalize numerical features
         """
-        # Check for missing values
         if self.df.isnull().sum().sum() > 0:
             print(f"Warning: Found {self.df.isnull().sum().sum()} missing values")
+            # Fill NaN values with appropriate defaults instead of dropping
+            self.df['Price_INR'].fillna(self.df['Price_INR'].median(), inplace=True)
+            self.df['Efficiency'].fillna(self.df['Efficiency'].median(), inplace=True)
+            self.df['Reliability'].fillna(self.df['Reliability'].median(), inplace=True)
+            # For any remaining NaNs, drop those rows
             self.df = self.df.dropna()
-        
-        # Check for duplicates
-        duplicates = self.df.duplicated().sum()
-        if duplicates > 0:
-            print(f"Warning: Found {duplicates} duplicate entries")
-            self.df = self.df.drop_duplicates()
-        
-        # Normalize numerical features
-        for category in self.df['Category'].unique():
-            category_df = self.df[self.df['Category'] == category]
-            
-            # Normalize price within each category
-            min_price = category_df['Price_INR'].min()
-            max_price = category_df['Price_INR'].max()
-            
-            # Create normalized price column (0-1 scale, where 0 is cheapest)
-            self.df.loc[self.df['Category'] == category, 'Normalized_Price'] = \
-                (self.df.loc[self.df['Category'] == category, 'Price_INR'] - min_price) / (max_price - min_price)
     
     def train_models(self):
         """Train ML models with available component data"""
@@ -382,7 +424,7 @@ class SmartHomePredictor:
             features = self._extract_component_features()
             
             # Scale features
-            scaled_features = self.scaler.fit_transform(features)
+            scaled_features = self._transform_with_scaler(features, self.scaler)
             
             # Create synthetic targets for training (since we don't have user feedback)
             # For compatibility: create synthetic compatibility scores based on component attributes
@@ -399,8 +441,12 @@ class SmartHomePredictor:
             self.performance_model.fit(scaled_features, performance_targets)
             
             # 3. Neural Network for complex patterns
-            self.nn_model.fit(scaled_features, self.df['Composite_Score'].values if 'Composite_Score' in self.df.columns 
-                             else self.df['Efficiency'].values)
+            if 'Composite_Score' in self.df.columns and not self.df['Composite_Score'].isna().any():
+                nn_targets = self.df['Composite_Score'].values
+            else:
+                nn_targets = self.df['Efficiency'].values
+
+            self.nn_model.fit(scaled_features, nn_targets)
             
             # 4. K-Means for component clustering
             self.kmeans_model.fit(scaled_features)
@@ -440,34 +486,23 @@ class SmartHomePredictor:
         for category in self.df['Category'].unique():
             features[f'Category_{category}'] = (self.df['Category'] == category).astype(int)
         
-        return features
-    
-    def _create_synthetic_compatibility_targets(self):
-        """Create synthetic compatibility targets for training"""
-        # This is a simplified approach - in a real scenario, you'd use actual compatibility data
-        # Here we'll use a heuristic: components with similar efficiency and reliability are more compatible
-        
-        # Normalize efficiency and reliability
-        efficiency_norm = (self.df['Efficiency'] - self.df['Efficiency'].min()) / (self.df['Efficiency'].max() - self.df['Efficiency'].min())
-        reliability_norm = (self.df['Reliability'] - self.df['Reliability'].min()) / (self.df['Reliability'].max() - self.df['Reliability'].min())
-        
-        # Create a synthetic compatibility score (0 or 1)
-        # Components with both high efficiency and reliability are considered "compatible"
-        compatibility = ((efficiency_norm + reliability_norm) / 2 > 0.6).astype(int)
-        
-        return compatibility
-    
+        return features  
+      
+    # Update model save paths to use os.path.join for cross-platform compatibility
     def _save_models(self):
         """Save trained models to disk"""
         try:
-            joblib.dump(self.compatibility_model, 'models/compatibility_model.pkl')
-            joblib.dump(self.performance_model, 'models/performance_model.pkl')
-            joblib.dump(self.nn_model, 'models/nn_model.pkl')
-            joblib.dump(self.kmeans_model, 'models/kmeans_model.pkl')
-            joblib.dump(self.knn_model, 'models/knn_model.pkl')
-            joblib.dump(self.decision_tree, 'models/decision_tree.pkl')
-            joblib.dump(self.gb_model, 'models/gb_model.pkl')
-            joblib.dump(self.scaler, 'models/scaler.pkl')
+            # Create models directory if it doesn't exist
+            os.makedirs('models', exist_ok=True)
+            
+            joblib.dump(self.compatibility_model, os.path.join('models', 'compatibility_model.pkl'))
+            joblib.dump(self.performance_model, os.path.join('models', 'performance_model.pkl'))
+            joblib.dump(self.nn_model, os.path.join('models', 'nn_model.pkl'))
+            joblib.dump(self.kmeans_model, os.path.join('models', 'kmeans_model.pkl'))
+            joblib.dump(self.knn_model, os.path.join('models', 'knn_model.pkl'))
+            joblib.dump(self.decision_tree, os.path.join('models', 'decision_tree.pkl'))
+            joblib.dump(self.gb_model, os.path.join('models', 'gb_model.pkl'))
+            joblib.dump(self.scaler, os.path.join('models', 'scaler.pkl'))
             print("Models saved successfully")
         except Exception as e:
             print(f"Error saving models: {e}")
@@ -509,7 +544,6 @@ class SmartHomePredictor:
             weights['price'] * self.df['Price_Score']
         )
         
-        # Try to enhance with ML models if available
         try:
             if hasattr(self, 'compatibility_model') and hasattr(self, 'performance_model'):
                 # Extract features for ML prediction
@@ -538,10 +572,10 @@ class SmartHomePredictor:
         
         # Add a small random factor to break ties (0.5% variation)
         import random
-        self.df['Composite_Score'] = self.df['Composite_Score'] * [random.uniform(0.995, 1.005) for _ in range(len(self.df))]
+        self.df['Composite_Score'] = self.df['Composite_Score'] * [random.uniform(0.999, 1.001) for _ in range(len(self.df))]
         
         return self.df['Composite_Score']
-    
+
     def adjust_weights_from_priorities(self, priorities, variant=0):
         """
         Adjust component selection weights based on user priorities
@@ -552,40 +586,345 @@ class SmartHomePredictor:
             Dictionary with user priorities (energy_efficiency, security, ease_of_use, scalability)
         variant : int, optional
             Variant number to generate different configurations
-            
+                
         Returns:
         --------
         dict
             Dictionary with adjusted weights for component selection
         """
-        # Normalize priorities to sum to 1
-        total_priority = sum(priorities.values())
-        norm_priorities = {k: v/total_priority for k, v in priorities.items()}
-        
         # Base weights
         weights = {
-            "efficiency": 0.25 + (norm_priorities['energy_efficiency'] * 0.05),
-            "reliability": 0.25 + (norm_priorities['security'] * 0.05),
-            "price": 0.5 - ((norm_priorities['energy_efficiency'] + norm_priorities['security']) * 0.025)
+            "efficiency": 0.33,
+            "reliability": 0.33,
+            "price": 0.34
         }
         
-        # Apply variations based on variant number
-        if variant == 1:
-            # Energy-Efficient: Strongly favor efficiency
-            weights['efficiency'] = min(0.6, weights['efficiency'] * 1.8)
-            weights['price'] = max(0.2, weights['price'] * 0.7)
-        elif variant == 2:
-            # High-Reliability: Strongly favor reliability
-            weights['reliability'] = min(0.6, weights['reliability'] * 1.8)
-            weights['price'] = max(0.2, weights['price'] * 0.7)
+        # Adjust weights based on priorities
+        # Energy efficiency affects efficiency weight
+        if 'energy_efficiency' in priorities:
+            efficiency_factor = priorities['energy_efficiency'] / 10.0  # Normalize to 0-1
+            weights["efficiency"] += efficiency_factor * 0.2
+            weights["price"] -= efficiency_factor * 0.1  # Higher efficiency may cost more
         
-        # Normalize weights to sum to 1
+        # Security affects reliability weight
+        if 'security' in priorities:
+            security_factor = priorities['security'] / 10.0  # Normalize to 0-1
+            weights["reliability"] += security_factor * 0.2
+            weights["price"] -= security_factor * 0.1  # Higher security may cost more
+        
+        # Ease of use affects both efficiency and reliability
+        if 'ease_of_use' in priorities:
+            ease_factor = priorities['ease_of_use'] / 10.0  # Normalize to 0-1
+            weights["efficiency"] += ease_factor * 0.05
+            weights["reliability"] += ease_factor * 0.05
+        
+        # Scalability affects price weight (more scalable = more future-proof = can invest more)
+        if 'scalability' in priorities:
+            scalability_factor = priorities['scalability'] / 10.0  # Normalize to 0-1
+            weights["price"] -= scalability_factor * 0.1
+        
+        # Adjust for specific device priorities from homepage
+        if 'security_devices' in priorities and priorities['security_devices']:
+            if priorities['security_devices']:
+                weights["reliability"] += 0.1
+            else:
+                weights["reliability"] -= 0.1
+            
+        if 'lighting' in priorities and priorities['lighting']:
+            if priorities['lighting']:
+                weights["efficiency"] += 0.05
+            else:
+                weights["efficiency"] -= 0.05
+            
+        if 'climate_control' in priorities and priorities['climate_control']:
+            if priorities['climate_control']:
+                weights["efficiency"] += 0.1
+            else:
+                weights["efficiency"] -= 0.1
+            
+        if 'entertainment' in priorities and priorities['entertainment']:
+            if priorities['entertainment']:
+                weights["reliability"] += 0.05
+            else:
+                weights["reliability"] -= 0.05
+        
+        # Apply variations based on variant number
+        if variant == 1:  # Energy-Efficient: Strongly favor efficiency
+            weights["efficiency"] += 0.15
+            weights["price"] -= 0.1
+            weights["reliability"] -= 0.05
+        elif variant == 2:  # High-Security: Strongly favor reliability
+            weights["reliability"] += 0.15
+            weights["price"] -= 0.1
+            weights["efficiency"] -= 0.05
+        
+        # Ensure weights are positive
+        for key in weights:
+            weights[key] = max(0.1, weights[key])
+        
+        # Re-normalize weights to sum to 1
         total = sum(weights.values())
         weights = {k: v/total for k, v in weights.items()}
         
         return weights
     
-    def generate_multiple_configurations(self, num_rooms, budget, priorities):
+    def adjust_for_home_type_and_location(self, home_type, location, components):
+        """
+        Adjust component selection based on home type and location
+        
+        Parameters:
+        -----------
+        home_type : str
+            Type of home (apartment, house, etc.)
+        location : str
+            Geographic location
+        components : list
+            List of selected components
+            
+        Returns:
+        --------
+        list
+            Adjusted list of components
+        """
+        adjusted_components = components.copy()
+        
+        # Adjust for home type
+        if home_type == 'apartment':
+            # For apartments, prioritize space-efficient and less intrusive components
+            for comp in adjusted_components:
+                if 'Efficiency' in comp:
+                    comp['Efficiency'] *= 1.1  # Increase efficiency importance
+        
+        elif home_type == 'house':
+            # For houses, can have more comprehensive systems
+            for comp in adjusted_components:
+                if comp['Category'] == 'Security':
+                    comp['Reliability'] *= 1.1  # Increase security reliability
+        
+        # Adjust for location (simplified example)
+        # In a real implementation, you might use weather data, crime statistics, etc.
+        if location.lower() in ['mumbai', 'delhi', 'bangalore', 'chennai']:
+            # For urban areas, might prioritize security
+            for comp in adjusted_components:
+                if comp['Category'] == 'Security':
+                    comp['Reliability'] *= 1.15
+        
+        return adjusted_components
+
+    def _convert_priorities_to_features(self, priorities):
+        """
+        Convert user priorities to features for ML personalization
+        
+        Parameters:
+        -----------
+        priorities : dict
+            Dictionary with user priorities
+            
+        Returns:
+        --------
+        list
+            List of features for ML models
+        """
+        # Normalize priorities to 0-1 scale
+        max_priority = 10.0  # Assuming priorities are on a 1-10 scale
+        
+        # Extract and normalize priorities
+        energy_efficiency = priorities.get('energy_efficiency', 5) / max_priority
+        security = priorities.get('security', 5) / max_priority
+        ease_of_use = priorities.get('ease_of_use', 5) / max_priority
+        scalability = priorities.get('scalability', 5) / max_priority
+        
+        # Create feature vector
+        features = [energy_efficiency, security, ease_of_use, scalability]
+        
+        return features
+
+    def _transform_with_scaler(self, features, scaler):
+        """Transform features using a fitted scaler while preserving feature names"""
+        try:
+            # Handle NaN values before scaling
+            if isinstance(features, pd.DataFrame):
+                features = features.replace([np.inf, -np.inf], np.nan)
+                features = features.fillna(features.median())
+                
+            # Check if features is a DataFrame
+            if hasattr(scaler, 'n_features_in_'):
+                if isinstance(features, pd.DataFrame):
+                    # If it's a DataFrame, extract values for scaling
+                    return scaler.transform(features)
+                else:
+                    # If it's already a numpy array
+                    return scaler.transform(np.array(features))
+            else:
+                # If scaler is not fitted, fit and transform
+                return scaler.fit_transform(features)
+        except Exception as e:
+            print(f"Error in _transform_with_scaler: {e}")
+            # Return unscaled features as fallback
+            if isinstance(features, pd.DataFrame):
+                return features.values
+            return features
+    def estimate_energy_consumption(self, components, priorities=None):
+        """
+        Estimate energy consumption for selected components
+        
+        Parameters:
+        -----------
+        components : list
+            List of selected components
+        priorities : dict, optional
+            User priorities to adjust estimates
+            
+        Returns:
+        --------
+        dict
+            Dictionary with energy consumption estimates
+        """
+        # Define typical power consumption by category (in watts)
+        typical_power = {
+            "Lighting": 10,  # LED smart bulbs
+            "Security": 5,   # Cameras, sensors
+            "HVAC": 50,      # Thermostats, controllers
+            "Energy Management": 2  # Smart plugs, monitors
+        }
+        
+        # Define typical usage hours by category
+        typical_usage = {
+            "Lighting": 6,    # hours per day
+            "Security": 24,   # hours per day (always on)
+            "HVAC": 8,        # hours per day
+            "Energy Management": 12  # hours per day
+        }
+        
+        # Adjust usage based on priorities if provided
+        if priorities:
+            # If energy efficiency is high priority, reduce usage hours
+            efficiency_factor = 1.0
+            if 'energy_efficiency' in priorities:
+                # Scale from 1-10 to 0.7-1.0 (higher priority = lower energy use)
+                efficiency_factor = 1.0 - (priorities['energy_efficiency'] / 30.0)
+                
+                # Adjust typical usage hours
+                for category in typical_usage:
+                    typical_usage[category] *= efficiency_factor
+            
+            # If security is high priority, increase security device usage
+            if 'security' in priorities and priorities['security'] > 7:
+                # Security devices stay on 24/7 regardless
+                pass
+        
+        # Calculate energy consumption
+        daily_consumption = 0
+        monthly_consumption = 0
+        consumption_by_category = {}
+        
+        for comp in components:
+            category = comp['Category']
+            
+            # Adjust power based on efficiency (higher efficiency = lower power)
+            efficiency_factor = 1.0 - (comp['Efficiency'] / 15.0)  # Scale from 0-10 to 0.33-1.0
+            adjusted_power = typical_power.get(category, 10) * efficiency_factor
+            
+            # Calculate daily consumption (Wh)
+            daily_wh = adjusted_power * typical_usage.get(category, 12)
+            daily_consumption += daily_wh
+            
+            # Add to category total
+            if category in consumption_by_category:
+                consumption_by_category[category] += daily_wh
+            else:
+                consumption_by_category[category] = daily_wh
+        
+        # Calculate monthly consumption (kWh)
+        monthly_consumption = daily_consumption * 30 / 1000
+        
+        # Calculate estimated cost (assuming ₹7 per kWh)
+        monthly_cost = monthly_consumption * 7
+        
+        return {
+            'daily_wh': daily_consumption,
+            'monthly_kwh': monthly_consumption,
+            'monthly_cost': monthly_cost,
+            'by_category': {
+                category: {
+                    'daily_wh': wh,
+                    'monthly_kwh': wh * 30 / 1000,
+                    'monthly_cost': wh * 30 / 1000 * 7
+                } for category, wh in consumption_by_category.items()
+            }
+        }
+
+    def check_component_compatibility(self, components):
+        """
+        Check compatibility between selected components
+        
+        Parameters:
+        -----------
+        components : list
+            List of selected components
+            
+        Returns:
+        --------
+        dict
+            Dictionary with compatibility information
+        """
+        compatibility_issues = []
+        compatibility_groups = {}
+        
+        # Extract compatibility information
+        for comp in components:
+            if 'Compatibility' in comp and isinstance(comp['Compatibility'], str):
+                name = comp['Component_Name']
+                protocols = [p.strip() for p in comp['Compatibility'].split(',')]
+                
+                # Add to compatibility groups
+                for protocol in protocols:
+                    if protocol not in compatibility_groups:
+                        compatibility_groups[protocol] = []
+                    compatibility_groups[protocol].append(name)
+        
+        # Check if there are components that don't share any protocol
+        for i, comp1 in enumerate(components):
+            if 'Compatibility' not in comp1 or not isinstance(comp1['Compatibility'], str):
+                continue
+                
+            name1 = comp1['Component_Name']
+            protocols1 = [p.strip() for p in comp1['Compatibility'].split(',')]
+            
+            for j in range(i+1, len(components)):
+                comp2 = components[j]
+                
+                if 'Compatibility' not in comp2 or not isinstance(comp2['Compatibility'], str):
+                    continue
+                    
+                name2 = comp2['Component_Name']
+                protocols2 = [p.strip() for p in comp2['Compatibility'].split(',')]
+                
+                # Check if there's any shared protocol
+                shared_protocols = set(protocols1).intersection(set(protocols2))
+                
+                if not shared_protocols:
+                    compatibility_issues.append({
+                        'component1': name1,
+                        'component2': name2,
+                        'protocols1': protocols1,
+                        'protocols2': protocols2,
+                        'message': f"No shared communication protocol between {name1} and {name2}"
+                    })
+        
+        # Identify main compatibility groups
+        main_groups = {}
+        for protocol, components in compatibility_groups.items():
+            if len(components) >= 3:  # Consider it a main group if it has at least 3 components
+                main_groups[protocol] = components
+        
+        return {
+            'issues': compatibility_issues,
+            'groups': compatibility_groups,
+            'main_groups': main_groups
+        }
+    
+    def generate_multiple_configurations(self, num_rooms, budget, priorities, home_type='apartment', location=''):
         """
         Generate multiple smart home configurations based on user inputs
         
@@ -597,25 +936,43 @@ class SmartHomePredictor:
             Total budget for the smart home setup
         priorities : dict
             Dictionary with user priorities (energy_efficiency, security, ease_of_use, scalability)
-            
+        home_type : str, optional
+            Type of home (apartment, house, etc.)
+        location : str, optional
+            Geographic location
+                
         Returns:
         --------
         list
             List of configuration dictionaries
         """
         configurations = []
-            # Configuration names and descriptions
+        # Configuration names and descriptions
         config_names = [
-        "Balanced Setup",
-        "Energy-Efficient Setup",
-        "High-Security Setup"
+            "Balanced Setup",
+            "Energy-Efficient Setup",
+            "High-Security Setup"
         ]
-    
+        
         config_descriptions = [
-        "A balanced configuration that optimizes for all priorities",
-        "Prioritizes energy efficiency with smart power management",
-        "Focuses on security features and reliability"
+            "A balanced configuration that optimizes for all priorities",
+            "Prioritizes energy efficiency with smart power management",
+            "Focuses on security features and reliability"
         ]
+        allowed_categories = []
+        if priorities.get("lighting"):
+            allowed_categories.append("Lighting")
+        if priorities.get("security_devices"):
+            allowed_categories.append("Security")
+        if priorities.get("climate_control"):
+            allowed_categories.append("HVAC")
+        if priorities.get("energy_management"):
+            allowed_categories.append("Energy Management")
+        if not priorities or not any([priorities.get("lighting"), priorities.get("security_devices"), 
+            priorities.get("climate_control"), priorities.get("energy_management")]):
+            allowed_categories = ["Lighting", "Security", "HVAC", "Energy Management"]
+        original_df = self.df.copy()
+        self.df = self.df[self.df['Category'].isin(allowed_categories)].reset_index(drop=True)
         # Generate 3 different configurations with different weight variations
         for variant in range(3):
             # Adjust weights based on priorities and variant
@@ -625,86 +982,137 @@ class SmartHomePredictor:
             self.calculate_composite_score(weights)
             
             # Optimize component selection
-            optimization_result = self.optimize_component_selection(num_rooms, budget, weights)
+            optimization_result = self.optimize_component_selection(num_rooms, budget, weights, priorities)
             
-            # Allocate components to rooms
-            room_allocations = self.allocate_components_to_rooms(optimization_result['selected_components'], num_rooms)
+            # Apply home type and location adjustments
+            optimization_result['selected_components'] = self.adjust_for_home_type_and_location(
+                home_type, 
+                location, 
+                optimization_result['selected_components']
+            )
+            
+            # Apply ML enhancements if available
+            if hasattr(self, 'compatibility_model'):
+                # Convert user priorities to features for personalization
+                user_features = self._convert_priorities_to_features(priorities)
+                
+                # Enhance component scores with ML
+                optimization_result['selected_components'] = self.enhance_component_scores_with_ml(
+                    optimization_result['selected_components'],
+                    user_features
+                )
+            
+            # Allocate components to rooms with priorities consideration
+            room_allocations = self.allocate_components_to_rooms(
+                optimization_result['selected_components'], 
+                num_rooms,
+                priorities
+            )
+            
+            # Calculate energy consumption estimates based on priorities
+            energy_estimates = self.estimate_energy_consumption(
+                optimization_result['selected_components'],
+                priorities
+            )
+            
+            # Check component compatibility
+            compatibility_info = self.check_component_compatibility(
+                optimization_result['selected_components']
+            )
             
             # Create configuration dictionary
             configuration = {
-            'variant': variant,
-            'name': config_names[variant],
-            'description': config_descriptions[variant],
-            'weights': weights,
-            'optimization_result': optimization_result,
-            'room_allocations': room_allocations,
-            'total_cost': optimization_result['total_cost'],
-            'total_components': len(optimization_result['selected_components'])
+                'variant': variant,
+                'name': config_names[variant],
+                'description': config_descriptions[variant],
+                'weights': weights,
+                'home_type': home_type,
+                'location': location,
+                'optimization_result': optimization_result,
+                'room_allocations': room_allocations,
+                'energy_estimates': energy_estimates,
+                'compatibility_info': compatibility_info,
+                'total_cost': optimization_result['total_cost'],
+                'total_components': len(optimization_result['selected_components'])
             }
             
             configurations.append(configuration)
-        
+        self.df = original_df
         return configurations
-    
-    def optimize_component_selection(self, num_rooms, budget, weights=None):
+
+    def optimize_component_selection(self, num_rooms, budget, weights=None, priorities=None):
         """
-        Optimize component selection based on budget and weights
-        
-        Parameters:
-        -----------
-        num_rooms : int
-            Number of rooms to configure
-        budget : float
-            Total budget for the smart home setup
-        weights : dict, optional
-            Dictionary with weights for efficiency, reliability, and price
-            
-        Returns:
-        --------
-        dict
-            Dictionary with optimization results
+        Optimize component selection based on budget and room requirements
         """
-        # Calculate composite scores if weights are provided
-        if weights:
+        # Recompute scores if missing
+        if 'Composite_Score' not in self.df.columns:
             self.calculate_composite_score(weights)
-        
-        # Create a copy of the dataframe for optimization
-        df_opt = self.df.copy()
-        
-        # Determine required components based on room types
+
+        # Quick NaN check
+        n_nans = self.df['Composite_Score'].isnull().sum()
+        print(f"[DEBUG] {n_nans} NaNs in Composite_Score")
+
+        # Get required counts
         required_components = self._determine_required_components(num_rooms)
-        
-        # Select components based on composite score and budget
-        selected_components = []
-        total_cost = 0
-        
-        # First, select required components for each category
-        for category, count in required_components.items():
-            # Get components in this category, sorted by composite score
-            category_components = df_opt[df_opt['Category'] == category].sort_values('Composite_Score', ascending=False)
-            
-            # Select the top N components based on required count
-            for i in range(min(count, len(category_components))):
-                component = category_components.iloc[i].to_dict()
-                
-                # Check if adding this component exceeds the budget
-                if total_cost + component['Price_INR'] <= budget:
-                    selected_components.append(component)
-                    total_cost += component['Price_INR']
-        
-        # Try to enhance component scores with ML if available
-        try:
-            if hasattr(self, 'compatibility_model'):
-                selected_components = self.enhance_component_scores_with_ml(selected_components)
-        except Exception as e:
-            print(f"Error enhancing component scores: {e}")
-        
-        # Return optimization result
+
+        # Build LP
+        prob = LpProblem("SmartHomeComponentSelection", LpMaximize)
+
+        # Integer vars 0–5, plus binary “used at all” vars
+        x = [LpVariable(f"x_{i}", lowBound=0, upBound=5, cat="Integer")
+            for i in range(len(self.df))]
+        y = [LpVariable(f"y_{i}", cat="Binary")
+            for i in range(len(self.df))]
+
+        # Debug their bounds
+        print("[DEBUG] Var[0] bounds:", x[0].lowBound, x[0].upBound, x[0].cat)
+
+        # Objective = sum(score*qty) − penalty*sum(y)
+        penalty = 0.5
+        prob += (
+            lpSum(x[i] * self.df.iloc[i]['Composite_Score'] for i in range(len(self.df)))
+            - penalty * lpSum(y[i] for i in range(len(self.df)))
+        )
+
+        # Budget
+        prob += lpSum(x[i] * self.df.iloc[i]['Price_INR'] for i in range(len(self.df))) <= budget
+
+        # Category minima
+        for cat, cnt in required_components.items():
+            idxs = [i for i,row in self.df.iterrows() if row['Category']==cat]
+            if idxs:
+                prob += lpSum(x[i] for i in idxs) >= cnt
+
+        # Link x→y
+        for i in range(len(self.df)):
+            prob += x[i] <= 5 * y[i]
+
+        # Solve
+        prob.solve(PULP_CBC_CMD(msg=False))
+
+        # Dump out the raw solution quantities
+        quantities = [int(var.varValue or 0) for var in x]
+        print("[DEBUG] Solution quantities:", quantities[:10], "…")
+
+        # Collect results
+        selected = []
+        cost = 0
+        for i, row in self.df.iterrows():
+            q = quantities[i]
+            if q > 0:
+                comp = row.to_dict()
+                comp['Quantity'] = q
+                comp['Total_Price_INR'] = comp['Price_INR'] * q
+                selected.append(comp)
+                cost += comp['Total_Price_INR']
+
         return {
-            'selected_components': selected_components,
-            'total_cost': total_cost,
-            'budget_utilization': total_cost / budget if budget > 0 else 0
+            'selected_components': selected,
+            'total_cost': cost,
+            'budget': budget,
+            'remaining_budget': budget - cost
         }
+
     
     def _determine_required_components(self, num_rooms):
         """
@@ -754,23 +1162,31 @@ class SmartHomePredictor:
                     required_components[category] += count
         
         return required_components
-    
-    def allocate_components_to_rooms(self, components, num_rooms):
+
+    def allocate_components_to_rooms(self, components, num_rooms, priorities=None):
         """
-        Allocate components to rooms based on room types
-        
+        Allocate components to rooms based on room types and user priorities
+
         Parameters:
         -----------
         components : list
             List of selected components
         num_rooms : int
             Number of rooms to configure
-            
+        priorities : dict, optional
+            User priorities to influence allocation
+
         Returns:
         --------
         list
             List of room dictionaries with allocated components
         """
+        import copy
+        components_copy = copy.deepcopy(components)
+
+        # Group similar components to avoid duplicates and sum their quantities
+        grouped_components = self._group_similar_components(components_copy)
+
         # Assign room types based on number of rooms
         room_types = []
         if num_rooms >= 1:
@@ -785,58 +1201,95 @@ class SmartHomePredictor:
             room_types.append("Hallway")
         if num_rooms >= 6:
             room_types.append("Entrance")
-        
+
         # Add additional bedrooms if needed
         while len(room_types) < num_rooms:
             room_types.append(f"Bedroom {len([r for r in room_types if 'Bedroom' in r]) + 1}")
-        
+
         # Initialize rooms with empty component lists
         rooms = [{'name': room_type, 'components': []} for room_type in room_types]
-        
+
+        # Calculate room priorities based on user preferences
+        room_priorities = {}
+        for room in rooms:
+            room_type = room['name'].split(' ')[0] if ' ' in room['name'] else room['name']
+            priority = 5
+            if priorities:
+                if room_type == "Living" and 'energy_efficiency' in priorities:
+                    priority += priorities['energy_efficiency'] * 0.3
+                if room_type in ["Entrance", "Hallway"] and 'security' in priorities:
+                    priority += priorities['security'] * 0.4
+                if room_type == "Kitchen" and 'energy_efficiency' in priorities:
+                    priority += priorities['energy_efficiency'] * 0.2
+            room_priorities[room['name']] = priority
+
         # Group components by category
         components_by_category = {}
-        for component in components:
+        for component in grouped_components:
             category = component['Category']
             if category not in components_by_category:
                 components_by_category[category] = []
             components_by_category[category].append(component)
-        
-        # Allocate components to rooms based on room types
-        for i, room in enumerate(rooms):
+
+        # Allocate components to rooms based on room types and preserve quantities
+        for room in rooms:
             room_type = room['name'].split(' ')[0] if ' ' in room['name'] else room['name']
-            
             if room_type in self.room_types:
-                # Allocate components based on room type requirements
                 for category, count in self.room_types[room_type].items():
                     if category in components_by_category and components_by_category[category]:
-                        # Allocate up to 'count' components of this category to the room
-                        for j in range(min(count, len(components_by_category[category]))):
-                            if components_by_category[category]:
-                                component = components_by_category[category].pop(0)
-                                room['components'].append(component)
-        
-        # Check if any room has zero components and redistribute if needed
-        if any(len(room['components']) == 0 for room in rooms):
-            # Sort rooms by number of components (ascending)
-            rooms_by_component_count = sorted(rooms, key=lambda r: len(r['components']))
-            
-            # Distribute remaining components to rooms with fewer components
-            for category, category_components in components_by_category.items():
-                for component in category_components[:]:  # Use a copy for iteration
-                    if not category_components:
-                        break
-                        
-                    # Find the room with the fewest components
-                    target_room = rooms_by_component_count[0]
-                    
-                    # Add component to room
-                    target_room['components'].append(component)
-                    components_by_category[category].remove(component)
-                    
-                    # Re-sort rooms by component count
-                    rooms_by_component_count = sorted(rooms, key=lambda r: len(r['components']))
-                    
+                        allocated_count = 0
+                        i = 0
+                        while i < len(components_by_category[category]) and allocated_count < count:
+                            component = components_by_category[category][i]
+                            quantity = int(component.get('Quantity', 1))
+                            to_allocate = min(quantity, count - allocated_count)
+                            if to_allocate > 0:
+                                room_component = component.copy()
+                                room_component['Quantity'] = to_allocate
+                                room_component['Total_Price_INR'] = component['Price_INR'] * to_allocate
+                                room['components'].append(room_component)
+                                remaining = quantity - to_allocate
+                                if remaining > 0:
+                                    component['Quantity'] = remaining
+                                    component['Total_Price_INR'] = component['Price_INR'] * remaining
+                                    i += 1
+                                else:
+                                    components_by_category[category].pop(i)
+                            else:
+                                i += 1
+
+        # Distribute any remaining components to rooms with highest priority
+        for category, category_components in components_by_category.items():
+            while category_components:
+                sorted_rooms = sorted(rooms, key=lambda r: room_priorities.get(r['name'], 0), reverse=True)
+                component = max(category_components, key=lambda c: c.get('Quantity', 1))
+                sorted_rooms[0]['components'].append(component)
+                category_components.remove(component)
+
+        # Ensure all components have Quantity field explicitly set as int
+        for room in rooms:
+            for component in room['components']:
+                if 'Quantity' not in component:
+                    component['Quantity'] = 1
+                component['Quantity'] = int(component['Quantity'])
+
         return rooms
+
+    def _group_similar_components(self, components):
+        """Group similar components and sum their quantities"""
+        grouped = {}
+        for comp in components:
+            key = comp['Component_Name']
+            if key in grouped:
+                grouped[key]['Quantity'] += comp.get('Quantity', 1)
+                grouped[key]['Total_Price_INR'] += comp.get('Total_Price_INR', comp['Price_INR'])
+            else:
+                comp_copy = comp.copy()
+                comp_copy['Quantity'] = comp.get('Quantity', 1)
+                comp_copy['Total_Price_INR'] = comp_copy['Price_INR'] * comp_copy['Quantity']
+                grouped[key] = comp_copy
+        return list(grouped.values())
+
     def visualize_component_distribution(self, configuration):
         """
         Visualize component distribution by category

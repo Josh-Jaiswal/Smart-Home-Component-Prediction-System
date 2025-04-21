@@ -179,3 +179,109 @@ print("\nPrice statistics by category:")
 print(data.groupby("Category")["Price_INR"].describe())
 print("\nSample data:")
 print(data.head())
+
+
+def generate_synthetic_data(num_components=100):
+    """Generate synthetic smart home component data"""
+    categories = ["Lighting", "Security", "HVAC", "Energy Management"]
+    
+    # Define component types within each category
+    component_types = {
+        "Lighting": ["Smart Bulb", "LED Strip", "Ceiling Light", "Floor Lamp", "Table Lamp", "Wall Sconce"],
+        "Security": ["Camera", "Motion Sensor", "Door Sensor", "Window Sensor", "Smart Lock", "Doorbell"],
+        "HVAC": ["Thermostat", "Temperature Sensor", "Air Purifier", "Fan", "Heater", "AC Controller"],
+        "Energy Management": ["Smart Plug", "Power Strip", "Energy Monitor", "Smart Switch", "EV Charger"]
+    }
+    
+    # Define brands for variety
+    brands = ["Nanoleaf", "Wyze", "Tapo", "Philips", "Sengled", "Govee", "TP-Link", "Meross", "Feit Electric", 
+              "Sylvania", "Yeelight", "Lifx", "Leviton", "Kasa", "GE", "Aqara", "Sonoff", "Tuya"]
+    
+    # Define compatibility protocols
+    protocols = ["Zigbee", "Z-Wave", "Wi-Fi", "Bluetooth", "Matter", "Thread"]
+    
+    data = []
+    
+    # Ensure we have a good variety by creating at least 3-5 of each component type
+    for category, types in component_types.items():
+        for comp_type in types:
+            # Create 3-5 variations of each component type
+            for _ in range(random.randint(3, 5)):
+                brand = random.choice(brands)
+                
+                # Generate a realistic component name
+                component_name = f"{brand} {comp_type}"
+                
+                # Add model number or variant for uniqueness
+                if random.random() > 0.5:
+                    component_name += f" {random.choice(['Pro', 'Plus', 'Mini', 'Max', 'Ultra'])}"
+                else:
+                    component_name += f" {random.choice(['A', 'B', 'C', 'X', 'Y', 'Z'])}{random.randint(1, 9)}"
+                
+                # Generate price based on category and random variation
+                base_price = {
+                    "Lighting": random.randint(800, 2500),
+                    "Security": random.randint(1500, 4000),
+                    "HVAC": random.randint(1200, 5000),
+                    "Energy Management": random.randint(700, 3000)
+                }[category]
+                
+                # Add some price variation
+                price = int(base_price * random.uniform(0.8, 1.2))
+                
+                # Generate efficiency and reliability scores
+                # Higher-priced items tend to have better scores
+                price_factor = min(1.0, price / 5000)  # Normalize price to 0-1 scale
+                efficiency = round(random.uniform(5, 8) + price_factor * 2, 1)  # 5-10 scale
+                reliability = round(random.uniform(5, 8) + price_factor * 2, 1)  # 5-10 scale
+                
+                # Generate compatibility
+                num_protocols = random.randint(1, 3)
+                compatibility = ", ".join(random.sample(protocols, num_protocols))
+                
+                data.append({
+                    "Component_Name": component_name,
+                    "Category": category,
+                    "Price_INR": price,
+                    "Efficiency": efficiency,
+                    "Reliability": reliability,
+                    "Compatibility": compatibility
+                })
+    
+    # If we need more components to reach the requested number
+    while len(data) < num_components:
+        category = random.choice(categories)
+        comp_type = random.choice(component_types[category])
+        brand = random.choice(brands)
+        
+        component_name = f"{brand} {comp_type} {random.choice(['Special', 'Custom', 'Limited'])} Edition"
+        
+        base_price = {
+            "Lighting": random.randint(800, 2500),
+            "Security": random.randint(1500, 4000),
+            "HVAC": random.randint(1200, 5000),
+            "Energy Management": random.randint(700, 3000)
+        }[category]
+        
+        price = int(base_price * random.uniform(0.8, 1.2))
+        price_factor = min(1.0, price / 5000)
+        efficiency = round(random.uniform(5, 8) + price_factor * 2, 1)
+        reliability = round(random.uniform(5, 8) + price_factor * 2, 1)
+        
+        num_protocols = random.randint(1, 3)
+        compatibility = ", ".join(random.sample(protocols, num_protocols))
+        
+        data.append({
+            "Component_Name": component_name,
+            "Category": category,
+            "Price_INR": price,
+            "Efficiency": efficiency,
+            "Reliability": reliability,
+            "Compatibility": compatibility
+        })
+    
+    # Convert to DataFrame and save to CSV
+    df = pd.DataFrame(data)
+    df.to_csv("synthetic_smart_home_components.csv", index=False)
+    print(f"Generated {len(df)} synthetic components")
+    return df

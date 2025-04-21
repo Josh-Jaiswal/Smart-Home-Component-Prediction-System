@@ -1,0 +1,1229 @@
+/* HomePage.css - Custom styles for the redesigned HomePage */
+
+:root {
+  --primary-color: #6c63ff;
+  --secondary-color: #8a7fff;
+  --accent-color: #ff7eb3;
+  --success-color: #28a745;
+  --text-light: rgba(255, 255, 255, 0.9);
+  --text-muted: rgba(255, 255, 255, 0.7);
+  --card-bg: rgba(36, 36, 68, 0.7);
+}
+
+/* Background overlay for better text contrast */
+.homepage::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(to bottom, rgba(10, 10, 30, 0.5), rgba(10, 10, 30, 0.3));
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* Hero Section Styles */
+.hero-container {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 2rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.hero-content {
+  max-width: 800px;
+  margin: 0 auto;
+  z-index: 1;
+  animation: fadeInUp 1.2s ease-out;
+}
+
+.hero-title {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 4rem;
+  font-weight: 700;
+  margin-bottom: 1.5rem;
+  line-height: 1.2;
+  text-shadow: 0 0 15px rgba(108, 99, 255, 0.5);
+  color: white;
+}
+
+.hero-subtitle {
+  font-size: 1.4rem;
+  margin-bottom: 2.5rem;
+  color: var(--text-light);
+  max-width: 700px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.text-gradient {
+  background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  display: inline-block;
+}
+
+.hero-cta {
+  margin-top: 2rem;
+}
+
+/* Feature Section Styles */
+.feature-section {
+  padding: 4rem 2rem;
+  text-align: center;
+  position: relative;
+  z-index: 1;
+  margin-top: -2rem; /* Reduce space between hero and feature section */
+  background: rgba(36, 36, 68, 0.7); /* Add background for better visibility */
+  border-radius: 15px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.section-title {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 2.5rem;
+  margin-bottom: 2rem;
+  position: relative;
+  display: inline-block;
+  color: var(--text-light); /* Ensure title is visible */
+  text-shadow: 0 0 10px rgba(108, 99, 255, 0.3);
+  text-align: center;
+}
+
+.section-title:after {
+  content: '';
+  position: absolute;
+  bottom: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 80px;
+  height: 4px;
+  background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+  border-radius: 2px;
+}
+
+.section-subtitle {
+  font-size: 1.2rem;
+  color: var(--text-light); /* Lighter color for better visibility */
+  margin-bottom: 2rem;
+  max-width: 700px;
+  margin-left: auto;
+  margin-right: auto;
+  text-align: center;
+}
+
+.feature-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 2rem;
+  margin-top: 3rem;
+}
+
+.feature-card {
+  background: rgba(36, 30, 50, 0.7);
+  backdrop-filter: blur(10px);
+  border-radius: 15px;
+  padding: 2rem;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.feature-card:hover {
+  transform: translateY(-10px);
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+  border-color: rgba(108, 99, 255, 0.3);
+  background: rgba(40, 40, 70, 0.8);
+}
+
+.feature-icon {
+  font-size: 2.5rem;
+  margin-bottom: 1.5rem;
+  color: var(--primary-color);
+  background: rgba(108, 99, 255, 0.15);
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.feature-card h3 {
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+  font-weight: 600;
+  color: white;
+}
+
+.feature-card p {
+  color: var(--text-light); /* Lighter color for better visibility */
+  font-size: 1rem;
+  line-height: 1.6;
+  margin-bottom: 0;
+}
+
+/* Configurator Section Styles */
+.configurator-section {
+  padding: 4rem 2rem;
+  position: relative;
+  z-index: 1;
+  margin-top: 3rem;
+}
+
+.section-header {
+  text-align: center;
+  margin-bottom: 3rem;
+}
+
+.config-form {
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+/* Form Navigation */
+.form-nav {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 2rem;
+  gap: 1rem;
+}
+
+.nav-item {
+  padding: 1rem 2rem;
+  background: rgba(36, 36, 68, 0.5);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.nav-item.active {
+  background: rgba(108, 99, 255, 0.2);
+  border-color: var(--primary-color);
+  transform: translateY(-5px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+}
+
+.nav-icon {
+  font-size: 1.2rem;
+}
+
+/* Form Sections */
+.form-sections {
+  position: relative;
+  min-height: 400px;
+}
+
+.form-section {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.5s ease, visibility 0.5s ease;
+}
+
+.form-section.active {
+  opacity: 1;
+  visibility: visible;
+  position: relative;
+}
+
+/* Glass Card Styling */
+.glass-card {
+  background: rgba(36, 36, 68, 0.7);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-radius: 15px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  overflow: hidden;
+  transition: all 0.3s ease;
+  padding: 2rem;
+}
+
+.glass-card:hover {
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
+  border-color: rgba(108, 99, 255, 0.2);
+  transform: translateY(-5px);
+}
+
+/* Slider Styling */
+.slider-container {
+  margin-bottom: 2rem;
+  position: relative;
+  padding-top: 30px; /* Add padding to make room for the value indicator */
+}
+
+/* Improve card styling for better text readability */
+.slider-grid .glass-card {
+  background: rgba(36, 36, 68, 0.85); /* Darker background for better contrast */
+  padding: 1.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.15); /* Slightly more visible border */
+}
+
+/* Make priority titles more readable */
+.priority-title {
+  text-align: center;
+  margin-bottom: 1rem;
+  color: white;
+  font-weight: 700; /* Bolder font weight */
+  font-size: 1.2rem; /* Larger font size */
+  text-shadow: 0 0 5px rgba(0, 0, 0, 0.5); /* Add text shadow for better readability */
+}
+
+/* Improve slider description text */
+.slider-description {
+  display: block;
+  color: white; /* Change from var(--text-muted) to white for better visibility */
+  font-size: 0.9rem; /* Slightly larger font */
+  margin-top: 0.8rem;
+  line-height: 1.4;
+  background: rgba(30, 30, 50, 0.7); /* Add subtle background to text */
+  padding: 0.5rem 0.8rem;
+  border-radius: 6px;
+  border-left: 3px solid var(--primary-color); /* Add accent border */
+}
+
+/* Improve slider value indicator */
+.slider-value {
+  position: absolute;
+  top: 0;
+  transform: translateX(-50%);
+  background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+  color: white;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 1rem; /* Larger font size */
+  font-weight: bold;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4); /* Stronger shadow */
+  transition: left 0.2s ease;
+  z-index: 2;
+  min-width: 30px;
+  text-align: center;
+  border: 2px solid rgba(255, 255, 255, 0.8); /* Add white border for better visibility */
+}
+
+/* Improve the slider track appearance */
+.custom-range {
+  height: 10px; /* Slightly taller for better visibility */
+  border-radius: 5px;
+  background: rgba(20, 20, 40, 0.7); /* Darker background for better contrast */
+  outline: none;
+  -webkit-appearance: none;
+  cursor: pointer;
+  width: 100%;
+  margin-top: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+/* Make the slider thumb more visible */
+.custom-range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 24px; /* Larger thumb */
+  height: 24px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+  cursor: pointer;
+  box-shadow: 0 0 10px rgba(108, 99, 255, 0.6);
+  transition: all 0.2s ease;
+  border: 2px solid white; /* Add white border */
+}
+
+.custom-range::-moz-range-thumb {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+  cursor: pointer;
+  box-shadow: 0 0 10px rgba(108, 99, 255, 0.6);
+  transition: all 0.2s ease;
+  border: 2px solid white;
+}
+
+.priority-icon {
+  color: var(--primary-color);
+  margin-right: 0.5rem;
+}
+
+.custom-range::-webkit-slider-thumb:hover {
+  transform: scale(1.2);
+  box-shadow: 0 0 15px rgba(108, 99, 255, 0.8);
+}
+
+.custom-range::-moz-range-thumb:hover {
+  transform: scale(1.2);
+  box-shadow: 0 0 15px rgba(108, 99, 255, 0.8);
+}
+
+/* Form Actions */
+.form-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 2rem;
+}
+
+.submit-btn {
+  background: linear-gradient(45deg, var(--primary-color), var(--accent-color));
+  border: none;
+  padding: 0.8rem 2rem;
+  font-weight: 600;
+  box-shadow: 0 5px 15px rgba(108, 99, 255, 0.5);
+  transition: all 0.3s ease;
+}
+
+.submit-btn:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 25px rgba(108, 99, 255, 0.7);
+}
+
+.submit-btn:active {
+  transform: translateY(1px);
+}
+
+.submit-btn:disabled {
+  background: linear-gradient(45deg, #6c6c6c, #4a4a4a);
+  transform: none;
+  box-shadow: none;
+}
+
+/* How It Works Section */
+.how-it-works-section {
+  padding: 4rem 2rem;
+  text-align: center;
+  position: relative;
+  z-index: 1;
+  margin-top: 3rem;
+  background: rgba(36, 36, 68, 0.7);
+  border-radius: 15px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.steps-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 2rem;
+  margin-top: 3rem;
+  position: relative;
+  padding: 1rem;
+}
+
+.steps-container:before {
+  content: '';
+  position: absolute;
+  top: 40px;
+  left: 5%;
+  right: 5%;
+  height: 4px;
+  background: linear-gradient(90deg, transparent, var(--primary-color), var(--secondary-color), transparent);
+  z-index: -1;
+  box-shadow: 0 0 15px rgba(108, 99, 255, 0.8);
+  opacity: 0.8;
+}
+
+.step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  justify-self: center;
+  width: 100%;
+  max-width: 250px;
+  margin: 0 auto;
+}
+
+.step-number {
+  width: 70px;
+  height: 70px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+  color: white;
+  font-size: 1.8rem;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1.5rem;
+  position: relative;
+  z-index: 2;
+  box-shadow: 0 0 20px rgba(108, 99, 255, 0.8);
+  border: 2px solid rgba(255, 255, 255, 0.8);
+}
+
+.step-content {
+  text-align: center;
+}
+
+.step-content h3 {
+  font-size: 1.4rem;
+  margin-bottom: 0.8rem;
+  font-weight: 600;
+  color: var(--text-light);
+  text-shadow: 0 0 5px rgba(108, 99, 255, 0.3);
+}
+
+.step-content p {
+  color: var(--text-light);
+  font-size: 1.1rem;
+  background: rgba(36, 36, 68, 0.6);
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  margin: 0 auto;
+  max-width: 90%;
+}
+
+/* Footer Styles */
+.footer {
+  background: rgba(26, 26, 46, 0.8);
+  backdrop-filter: blur(10px);
+  padding: 2rem 0;
+  text-align: center;
+  margin-top: 3rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.footer p {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  margin-bottom: 0;
+}
+
+/* Step Progress Indicator */
+.step-progress {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 2rem;
+  padding: 0 1rem;
+}
+
+.step-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  z-index: 1;
+}
+
+.step-circle {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: var(--card-bg);
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  margin-bottom: 0.5rem;
+  transition: all 0.3s ease;
+}
+
+.step-label {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  text-align: center;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+}
+
+.step-connector {
+  flex-grow: 1;
+  height: 2px;
+  background-color: rgba(255, 255, 255, 0.2);
+  margin: 0 0.5rem;
+  position: relative;
+  top: -20px;
+  z-index: 0;
+  max-width: 100px;
+}
+
+/* Step status styles */
+.step-item.active .step-circle {
+  background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+  border-color: rgba(255, 255, 255, 0.8);
+  color: white;
+  box-shadow: 0 0 15px rgba(108, 99, 255, 0.6);
+}
+
+.step-item.active .step-label {
+  color: white;
+  font-weight: 600;
+}
+
+.step-item.completed .step-circle {
+  background-color: var(--success-color);
+  border-color: rgba(255, 255, 255, 0.8);
+  color: white;
+}
+
+.step-item.completed .step-label {
+  color: var(--success-color);
+}
+
+/* Multi-step form styles */
+.form-step {
+  display: none;
+  opacity: 0;
+  transition: opacity 0.5s ease;
+}
+
+.form-step.active {
+  display: block;
+  opacity: 1;
+  animation: fadeInUp 0.5s ease forwards;
+}
+
+.step-title {
+  text-align: center;
+  margin-bottom: 1.5rem;
+  color: white;
+  font-weight: 600;
+}
+
+/* Device priorities section */
+.device-priorities {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.device-option {
+  background: rgba(50, 50, 80, 0.5);
+  border-radius: 10px;
+  padding: 1rem;
+  transition: all 0.3s ease;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.device-option:hover {
+  background: rgba(60, 60, 100, 0.5);
+  transform: translateY(-3px);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+.form-check-label {
+  font-weight: 500;
+  color: white;
+  cursor: pointer;
+}
+
+.device-description {
+  display: block;
+  margin-top: 0.5rem;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+
+/* Form switch customization */
+.form-check-input {
+  height: 1.5rem;
+  width: 3rem;
+}
+
+.form-check-input:checked {
+  background-color: var(--primary-color);
+  border-color: var(--primary-color);
+}
+
+.form-check-input:focus {
+  box-shadow: 0 0 0 0.25rem rgba(108, 99, 255, 0.25);
+}
+
+/* Navigation buttons */
+.back-btn {
+  border-color: rgba(255, 255, 255, 0.2);
+  color: white;
+  transition: all 0.3s ease;
+}
+
+.back-btn:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.3);
+  color: white;
+}
+
+.next-btn {
+  background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+  border: none;
+  padding: 0.6rem 1.5rem;
+  transition: all 0.3s ease;
+  box-shadow: 0 5px 15px rgba(108, 99, 255, 0.4);
+}
+
+.next-btn:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 20px rgba(108, 99, 255, 0.6);
+}
+
+.form-control:focus, .form-select:focus {
+  background-color: rgba(40, 40, 70, 0.8);
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 0.25rem rgba(108, 99, 255, 0.25);
+  color: white;
+}
+
+/* Animations */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.pulse-btn {
+  animation: pulse 2s infinite;
+  background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+  border: none;
+  box-shadow: 0 5px 15px rgba(108, 99, 255, 0.4);
+}
+
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(108, 99, 255, 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 15px rgba(108, 99, 255, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(108, 99, 255, 0);
+  }
+}
+
+.pulse-btn:hover {
+  animation: none;
+  transform: translateY(-3px);
+  box-shadow: 0 8px 25px rgba(108, 99, 255, 0.7);
+}
+
+/* Responsive Styles */
+@media (max-width: 768px) {
+  .hero-title {
+    font-size: 2.5rem;
+  }
+  
+  .hero-subtitle {
+    font-size: 1.1rem;
+  }
+  
+  .section-title {
+    font-size: 2rem;
+  }
+  
+  .steps-container:before {
+    display: none;
+  }
+  
+  .form-nav {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .nav-item {
+    width: 100%;
+    justify-content: center;
+  }
+  
+  .slider-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .device-priorities {
+    grid-template-columns: 1fr;
+  }
+  
+  .form-actions {
+    flex-direction: column;
+    gap: 1rem;
+  }
+  
+  .form-actions button {
+    width: 100%;
+  }
+  
+  .step-progress {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+  
+  .step-connector {
+    display: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .hero-title {
+    font-size: 2rem;
+  }
+  
+  .feature-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Form field labels and headers */
+.form-label, .form-step h3, .form-step h4 {
+  color: white;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  text-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
+  background: rgba(108, 99, 255, 0.2);
+  padding: 0.4rem 0.8rem;
+  border-radius: 6px;
+  display: inline-block;
+}
+
+/* Add these new styles for the step container */
+.step-container {
+  max-width: 500px;
+  margin: auto;
+  padding: 1rem;
+  color: white;
+  background: rgba(30, 30, 48, 0.85);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-radius: 12px;
+  border: 1px solid rgba(108, 99, 255, 0.2);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3), 0 0 15px rgba(108, 99, 255, 0.2);
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 1.5rem;
+}
+
+.form-group label {
+  margin-bottom: 0.5rem;
+  font-weight: bold;
+  background: rgba(108, 99, 255, 0.15);
+  padding: 0.4rem 0.8rem;
+  border-radius: 4px;
+  display: inline-block;
+}
+
+.form-group input,
+.form-group select {
+  padding: 0.7rem 1rem;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background-color: rgba(20, 20, 40, 0.7);
+  color: white;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 2px rgba(108, 99, 255, 0.25);
+  outline: none;
+}
+
+.next-button:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 20px rgba(108, 99, 255, 0.6);
+}
+
+.next-button:active {
+  transform: translateY(1px);
+}
+/* Form step headers */
+.form-step-header {
+  text-align: center;
+  margin-bottom: 2rem;
+  background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+  padding: 0.8rem;
+  border-radius: 8px;
+  color: white;
+  font-weight: 700;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+/* Form help text */
+.form-text {
+  color: white;
+  background: rgba(30, 30, 50, 0.6);
+  padding: 0.4rem 0.8rem;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  margin-top: 0.5rem;
+  border-left: 3px solid var(--primary-color);
+}
+
+/* Input group with icon */
+.input-group-text {
+  background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+  color: white;
+  border: none;
+}
+
+/* Form controls with better contrast */
+.form-control, .form-select {
+  background-color: rgba(30, 30, 50, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: white;
+  font-weight: 500;
+  padding: 0.6rem 1rem;
+}
+
+.form-control::placeholder, .form-select::placeholder {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+/* Form Card Styling - Improved version */
+.form-card {
+  background: rgba(30, 30, 48, 0.85);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-radius: 12px;
+  border: 1px solid rgba(108, 99, 255, 0.2);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3), 0 0 15px rgba(108, 99, 255, 0.2);
+  padding: 2rem;
+  margin-bottom: 2rem;
+  max-width: 800px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Form field row styling */
+.field-row {
+  margin-bottom: 1.5rem;
+  text-align: left;
+}
+
+/* Form field label styling */
+.field-row label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+  color: white;
+  font-size: 1rem;
+  background: rgba(108, 99, 255, 0.15);
+  padding: 0.4rem 0.8rem;
+  border-radius: 4px;
+  display: inline-block;
+}
+
+/* Form field input styling */
+.field-row input,
+.field-row select {
+  width: 100%;
+  padding: 0.7rem 1rem;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(20, 20, 40, 0.7);
+  color: white;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+}
+
+.field-row input:focus,
+.field-row select:focus {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 2px rgba(108, 99, 255, 0.25);
+  outline: none;
+}
+
+/* Helper text styling */
+.helper-text {
+  display: block;
+  font-size: 0.85rem;
+  margin-top: 0.5rem;
+  color: rgba(255, 255, 255, 0.7);
+  background: rgba(30, 30, 50, 0.5);
+  padding: 0.4rem 0.8rem;
+  border-radius: 4px;
+  border-left: 3px solid var(--primary-color);
+}
+
+/* Step indicator styling */
+.step-indicator {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 2rem;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.step-indicator span {
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  background: rgba(30, 30, 50, 0.5);
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.9rem;
+  transition: all 0.3s ease;
+}
+
+.step-indicator span.active {
+  background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+  color: white;
+  font-weight: 600;
+  box-shadow: 0 0 15px rgba(108, 99, 255, 0.4);
+}
+
+/* Navigation buttons container */
+.nav-buttons {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 2rem;
+}
+
+/* Primary button styling */
+.primary-btn {
+  background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+  color: white;
+  border: none;
+  padding: 0.8rem 2rem;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 5px 15px rgba(108, 99, 255, 0.4);
+}
+
+.primary-btn:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 20px rgba(108, 99, 255, 0.6);
+}
+
+.primary-btn:active {
+  transform: translateY(1px);
+}
+
+/* Secondary button styling */
+.secondary-btn {
+  background: transparent;
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  padding: 0.8rem 1.5rem;
+  border-radius: 6px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.secondary-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.5);
+}
+
+/* Form section title */
+.form-section-title {
+  font-size: 1.2rem;
+  color: white;
+  margin-bottom: 1.5rem;
+  text-align: center;
+  font-weight: 600;
+  position: relative;
+  display: inline-block;
+}
+
+.form-section-title:after {
+  content: '';
+  position: absolute;
+  bottom: -8px;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--primary-color), var(--secondary-color), transparent);
+}
+/* Home Information Form Card - Complete Rework */
+.wizard-form-container {
+  background: rgba(30, 30, 50, 0.85);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-radius: 15px;
+  border: 1px solid rgba(108, 99, 255, 0.2);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3), 0 0 15px rgba(108, 99, 255, 0.2);
+  padding: 2rem;
+  margin-bottom: 2rem;
+  max-width: 800px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Form header styling */
+.form-header {
+  display: none; /* Hide the redundant header */
+}
+
+/* Form field container */
+.form-field-container {
+  margin-bottom: 1.5rem;
+}
+
+/* Form field label styling */
+.form-field-container label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+  color: white;
+  font-size: 0.9rem;
+  padding: 0.3rem 0.6rem;
+  border-radius: 4px;
+  background: rgba(108, 99, 255, 0.2);
+  display: inline-block;
+}
+
+/* Form field input styling */
+.form-field-container input,
+.form-field-container select {
+  width: 100%;
+  padding: 0.7rem 1rem;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(20, 20, 40, 0.7);
+  color: white;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+}
+
+.form-field-container input:focus,
+.form-field-container select:focus {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 2px rgba(108, 99, 255, 0.25);
+  outline: none;
+}
+
+/* Helper text styling */
+.form-field-container .helper-text {
+  display: block;
+  font-size: 0.85rem;
+  margin-top: 0.5rem;
+  color: rgba(255, 255, 255, 0.7);
+  padding: 0.3rem 0.6rem;
+  border-radius: 4px;
+  border-left: 3px solid var(--primary-color);
+  background: rgba(30, 30, 50, 0.5);
+}
+
+/* Location input group styling */
+.location-input-group {
+  display: flex;
+  align-items: center;
+  background: rgba(20, 20, 40, 0.7);
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  overflow: hidden;
+}
+
+.location-icon-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 1rem;
+  background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+  color: white;
+  height: 100%;
+}
+
+.location-input-group input {
+  border: none;
+  border-radius: 0;
+  background: transparent;
+}
+
+.location-input-group input:focus {
+  box-shadow: none;
+}
+
+/* Next button styling */
+.next-button {
+  background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+  color: white;
+  border: none;
+  padding: 0.8rem 2rem;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 5px 15px rgba(108, 99, 255, 0.4);
+  display: block;
+  width: 100%;
+  margin-top: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.next-button:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 20px rgba(108, 99, 255, 0.6);
+}
+
+.next-button:active {
+  transform: translateY(1px);
+}
+
+/* Two-column layout for form fields when space allows */
+@media (min-width: 768px) {
+  .form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+  }
+}
+
+/* Form placeholder styling */
+.form-field-container input::placeholder {
+  color: rgba(255, 255, 255, 0.4);
+}
+
+/* Form select arrow styling */
+.form-field-container select {
+  appearance: none;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 1rem center;
+  background-size: 1em;
+  padding-right: 2.5rem;
+}
+/* Make the wizard form container more specific */
+.homepage .wizard-form-container {
+  background: rgba(30, 30, 50, 0.85)
+  !important;
+  backdrop-filter: blur(10px)
+  !important;
+  -webkit-backdrop-filter: blur(10px);
+  border-radius: 15px;
+  border: 1px solid rgba(108, 99, 255, 0.2);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3), 0 0 15px rgba(108, 99, 255, 0.2);
+  padding: 2rem;
+  margin-bottom: 2rem;
+  max-width: 800px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Make form field container more specific */
+.homepage .form-field-container {
+  margin-bottom: 1.5rem;
+}
